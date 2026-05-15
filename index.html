@@ -61,7 +61,7 @@
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 py-10 space-y-12">
+    <main class="max-w-7xl mx-auto px-4 py-10 space-y-12">
 
         <!-- 1. Instructor Section: Initialization -->
         <section id="instructor-panel" class="glass-card rounded-2xl p-8 shadow-xl border-l-8 border-brand-indigo">
@@ -91,53 +91,24 @@
                     <span class="bg-brand-indigo text-white p-2 rounded-lg">📋</span>
                     各組任務與權限網址表
                 </h2>
-                <span class="text-sm text-slate-500">自動生成於 <span id="timestamp"></span></span>
+                <span class="text-sm text-slate-500">最後更新：<span id="timestamp"></span></span>
             </div>
             
-            <div class="overflow-hidden rounded-2xl shadow-xl border border-slate-200 bg-white">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-slate-100 text-slate-600 font-semibold uppercase text-sm">
+            <div class="overflow-hidden rounded-2xl shadow-xl border border-slate-200 bg-white overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[1000px]">
+                    <thead class="bg-slate-100 text-slate-600 font-semibold uppercase text-xs tracking-wider">
                         <tr>
                             <th class="px-6 py-4">組別</th>
                             <th class="px-6 py-4">分配題目</th>
-                            <th class="px-6 py-4 text-center">操作</th>
-                            <th class="px-6 py-4">專屬資料夾</th>
+                            <th class="px-6 py-4">詳情</th>
+                            <th class="px-6 py-4">雲端空間</th>
+                            <th class="px-6 py-4">成果網址繳交</th>
                         </tr>
                     </thead>
                     <tbody id="groups-tbody" class="divide-y divide-slate-100">
                         <!-- Dynamic Rows -->
                     </tbody>
                 </table>
-            </div>
-        </section>
-
-        <!-- 3. Student Submission Section -->
-        <section id="submission-panel" class="glass-card rounded-2xl p-8 shadow-xl border-l-8 border-brand-emerald">
-            <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <span class="bg-brand-emerald text-white p-2 rounded-lg">📤</span>
-                成果繳交 (學生端)
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">選擇組別</label>
-                    <select id="submit-group" class="w-full px-4 py-4 rounded-xl border-2 border-slate-200 focus:border-brand-emerald transition-all text-lg font-medium">
-                        <option value="" disabled selected>請選擇組別</option>
-                        <!-- Dynamic Options -->
-                    </select>
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">作品網址 (GitHub / Vercel / Cloudflare)</label>
-                    <div class="flex gap-3">
-                        <input type="url" id="submit-url" placeholder="https://..." 
-                            class="flex-1 px-4 py-4 rounded-xl border-2 border-slate-200 focus:border-brand-emerald transition-all text-lg">
-                        <button onclick="submitResult()" class="bg-brand-emerald hover:bg-emerald-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-emerald-200 transition-all transform hover:-translate-y-1">
-                            提交成果
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div id="submit-feedback" class="hidden mt-4 p-4 rounded-lg bg-emerald-100 text-emerald-800 font-medium border border-emerald-200">
-                ✅ 提交成功！辛苦各位專家與開發者了。
             </div>
         </section>
 
@@ -194,115 +165,20 @@
     </div>
 
     <script>
-        // 1. Google Apps Script URL (Placeholder)
+        // 1. Google Apps Script URL (REQUIRED)
+        // 請將部署後的 Web App URL 貼在這裡
         const scriptURL = "";
 
         // 2. Task Data
         const TASKS = [
-            {
-                id: 1,
-                title: "實驗室復原導航員",
-                target: "ADHD",
-                requirement: "ADHD 學生面對理化實驗後的混亂桌面容易焦慮。",
-                purpose: "視覺化步驟勾選框。想像畫面：學生下課前打開網頁，收好器材就點擊「已洗淨歸位」，系統發出叮咚聲並跳出鼓勵貼紙。",
-                roles: {
-                    "專家1": "運用 NotebookLM 整理「國中理化實驗室收納規範」。",
-                    "專家2": "運用 Gemini 轉化為 5 個具體步驟。",
-                    "開發者1": "在 Antigravity 開發帶有大勾選框的網頁。",
-                    "開發者2": "負責 UI 測試與 CSS 色彩調整。"
-                }
-            },
-            {
-                id: 2,
-                title: "合作報告：衝突拆解器",
-                target: "ASD",
-                requirement: "ASD 學生難以理解組員的「委婉拒絕」或不知如何表達異議。",
-                purpose: "社交腳本選擇題。想像畫面：學生遇到困難時偷偷點選情境，網頁播放建議回應的語音範例供練習。",
-                roles: {
-                    "專家1": "運用 NotebookLM 整理「青少年 ASD 社交訓練資料」。",
-                    "專家2": "運用 Gemini 產出 3 個衝突情境分支。",
-                    "開發者1": "製作互動式對話視窗。",
-                    "開發者2": "測試選項路徑與語速回饋。"
-                }
-            },
-            {
-                id: 3,
-                title: "細胞構造：易讀掃描儀",
-                target: "LD/ID",
-                requirement: "學障學生對生物課本密集的細胞構造描述感到閱讀疲勞。",
-                purpose: "圖文易讀百科。想像畫面：學生輸入課本文字，網頁顯示大字體短句，點擊「細胞核」會發聲：「這是細胞的大腦」。",
-                roles: {
-                    "專家1": "運用 NotebookLM 提取生物術語關鍵字。",
-                    "專家2": "運用 Gemini 將術語改寫為易讀比喻。",
-                    "開發者1": "開發卡片式佈局網頁。",
-                    "開發者2": "負責 UI 無障礙檢查。"
-                }
-            },
-            {
-                id: 4,
-                title: "今日優先事項：任務提取器",
-                target: "ADHD/LD",
-                requirement: "國中科目繁多，ADHD 學生常遺漏聯絡簿中的攜帶物品。",
-                purpose: "優先順序分類器。想像畫面：學生輸入內容，網頁自動用鮮豔顏色標記「明天要交」與「要帶器材」。",
-                roles: {
-                    "專家1": "運用 NotebookLM 分析「國中生時間管理策略」。",
-                    "專家2": "運用 Gemini 設定優先級判斷邏輯。",
-                    "開發者1": "製作輸入框與自動分類列表區。",
-                    "開發者2": "模擬輸入測試準確度。"
-                }
-            },
-            {
-                id: 5,
-                title: "考場冷靜：3 分鐘按鈕",
-                target: "EBD",
-                requirement: "情障學生在考試壓力下容易生理恐慌。",
-                purpose: "快速情緒調節引導。想像畫面：學生感到心跳加快時點開網頁，跟隨溫柔節奏動畫呼吸 3 次並聽取安撫語句。",
-                roles: {
-                    "專家1": "運用 NotebookLM 整理青少年 CBT 或正念技巧。",
-                    "專家2": "運用 Gemini 編寫三階段語音引導腳本。",
-                    "開發者1": "開發具備計時器與動態視覺的冷靜頁面。",
-                    "開發者2": "調整網頁色彩心理學配色。"
-                }
-            },
-            {
-                id: 6,
-                title: "通勤守護：迷路應急包",
-                target: "ID/ASD",
-                requirement: "智障學生若公車改道或下錯站會極度恐慌。",
-                purpose: "緊急行動指引。想像畫面：手機上有個大紅按鈕，點開顯示「待在原地、打給老師」並持續播放語音安撫。",
-                roles: {
-                    "專家1": "運用 NotebookLM 整理社區適應資料。",
-                    "專家2": "運用 Gemini 產出針對「下錯站」的應變指令。",
-                    "開發者1": "製作高對比、大按鈕網頁。",
-                    "開發者2": "模擬手機端操作，測試強光下清晰度。"
-                }
-            },
-            {
-                id: 7,
-                title: "拒絕誘惑：口語練習室",
-                target: "EBD/ID",
-                requirement: "國中同儕壓力大，學生常被帶動去做違規行為。",
-                purpose: "拒絕技巧練習。想像畫面：網頁出現同學角色說話，學生練習選擇正確台詞保護自己。",
-                roles: {
-                    "專家1": "運用 NotebookLM 整理「青少年拒絕技巧」策略。",
-                    "專家2": "運用 Gemini 設定誘惑情境對話腳本。",
-                    "開發者1": "開發角色對話框形式的遊戲。",
-                    "開發者2": "確保語音朗讀能聽出「堅定」的語氣。"
-                }
-            },
-            {
-                id: 8,
-                title: "午餐預算：數位點餐員",
-                target: "LD-Math",
-                requirement: "數障學生在福利社面對找零計算容易尷尬。",
-                purpose: "金額視覺化計算。想像畫面：網頁上有餐點圖示，點選後自動顯示總價與「應找回多少」。",
-                roles: {
-                    "專家1": "運用 NotebookLM 整理功能性數學課程。",
-                    "專家2": "運用 Gemini 設定福利社商品清單與找零邏輯。",
-                    "開發者1": "製作圖像化點餐介面。",
-                    "開發者2": "協助加總邏輯除錯。"
-                }
-            }
+            { id: 1, title: "實驗室復原導航員", target: "ADHD", requirement: "ADHD 學生面對理化實驗後的混亂桌面容易焦慮。", purpose: "視覺化步驟勾選框。想像畫面：學生下課前打開網頁，收好器材就點擊「已洗淨歸位」，系統發出叮咚聲並跳出鼓勵貼紙。", roles: { "專家1": "運用 NotebookLM 整理「國中理化實驗室收納規範」。", "專家2": "運用 Gemini 轉化為 5 個具體步驟。", "開發者1": "在 Antigravity 開發帶有大勾選框的網頁。", "開發者2": "負責 UI 測試與 CSS 色彩調整。" } },
+            { id: 2, title: "合作報告：衝突拆解器", target: "ASD", requirement: "ASD 學生難以理解組員的「委婉拒絕」或不知如何表達異議。", purpose: "社交腳本選擇題。想像畫面：學生遇到困難時偷偷點選情境，網頁播放建議回應的語音範例供練習。", roles: { "專家1": "運用 NotebookLM 整理「青少年 ASD 社交訓練資料」。", "專家2": "運用 Gemini 產出 3 個衝突情境分支。", "開發者1": "製作互動式對話視窗。", "開發者2": "測試選項路徑與語速回饋。" } },
+            { id: 3, title: "細胞構造：易讀掃描儀", target: "LD/ID", requirement: "學障學生對生物課本密集的細胞構造描述感到閱讀疲勞。", purpose: "圖文易讀百科。想像畫面：學生輸入課本文字，網頁顯示大字體短句，點擊「細胞核」會發聲：「這是細胞的大腦」。", roles: { "專家1": "運用 NotebookLM 提取生物術語關鍵字。", "專家2": "運用 Gemini 將術語改寫為易讀比喻。", "開發者1": "開發卡片式佈局網頁。", "開發者2": "負責 UI 無障礙檢查。" } },
+            { id: 4, title: "今日優先事項：任務提取器", target: "ADHD/LD", requirement: "國中科目繁多，ADHD 學生常遺漏聯絡簿中的攜帶物品。", purpose: "優先順序分類器。想像畫面：學生輸入內容，網頁自動用鮮豔顏色標記「明天要交」與「要帶器材」。", roles: { "專家1": "運用 NotebookLM 分析「國中生時間管理策略」。", "專家2": "運用 Gemini 設定優先級判斷邏輯。", "開發者1": "製作輸入框與自動分類列表區。", "開發者2": "模擬輸入測試準確度。" } },
+            { id: 5, title: "考場冷靜：3 分鐘按鈕", target: "EBD", requirement: "情障學生在考試壓力下容易生理恐慌。", purpose: "快速情緒調節引導。想像畫面：學生感到心跳加快時點開網頁，跟隨溫柔節奏動畫呼吸 3 次並聽取安撫語句。", roles: { "專家1": "運用 NotebookLM 整理青少年 CBT 或正念技巧。", "專家2": "運用 Gemini 編寫三階段語音引導腳本。", "開發者1": "開發具備計時器與動態視覺的冷靜頁面。", "開發者2": "調整網頁色彩心理學配色。" } },
+            { id: 6, title: "通勤守護：迷路應急包", target: "ID/ASD", requirement: "智障學生若公車改道或下錯站會極度恐慌。", purpose: "緊急行動指引。想像畫面：手機上有個大紅按鈕，點開顯示「待在原地、打給老師」並持續播放語音安撫。", roles: { "專家1": "運用 NotebookLM 整理社區適應資料。", "專家2": "運用 Gemini 產出針對「下錯站」的應變指令。", "開發者1": "製作高對比、大按鈕網頁。", "開發者2": "模擬手機端操作，測試強光下清晰度。" } },
+            { id: 7, title: "拒絕誘惑：口語練習室", target: "EBD/ID", requirement: "國中同儕壓力大，學生常被帶動去做違規行為。", purpose: "拒絕技巧練習。想像畫面：網頁出現同學角色說話，學生練習選擇正確台詞保護自己。", roles: { "專家1": "運用 NotebookLM 整理「青少年拒絕技巧」策略。", "專家2": "運用 Gemini 設定誘惑情境對話腳本。", "開發者1": "開發角色對話框形式的遊戲。", "開發者2": "確保語音朗讀能聽出「堅定」的語氣。" } },
+            { id: 8, title: "午餐預算：數位點餐員", target: "LD-Math", requirement: "數障學生在福利社面對找零計算容易尷尬。", purpose: "金額視覺化計算。想像畫面：網頁上有餐點圖示，點選後自動顯示總價與「應找回多少」。", roles: { "專家1": "運用 NotebookLM 整理功能性數學課程。", "專家2": "運用 Gemini 設定福利社商品清單與找零邏輯。", "開發者1": "製作圖像化點餐介面。", "開發者2": "協助加總邏輯除錯。" } }
         ];
 
         let assignedData = [];
@@ -315,22 +191,21 @@
                 return;
             }
 
-            // Show Loading
+            if (!scriptURL) {
+                alert("⚠️ 請先設定 scriptURL 以進行雲端自動化。");
+            }
+
             document.getElementById('loading-overlay').classList.remove('hidden');
 
-            // Randomly pick tasks
             const shuffled = [...TASKS].sort(() => 0.5 - Math.random());
             const selectedTasks = shuffled.slice(0, count);
 
             try {
                 let folderUrls = {};
                 
-                // If scriptURL is set, call backend
                 if (scriptURL) {
                     const response = await fetch(scriptURL, {
                         method: 'POST',
-                        mode: 'no-cors', // Common for GAS
-                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             action: "initFolders",
                             groups: selectedTasks.map((t, i) => ({
@@ -339,31 +214,37 @@
                             }))
                         })
                     });
-                    // Since no-cors can't read response, we usually need a small delay or a different approach
-                    // For this demo, we'll simulate the response if scriptURL is empty or fails
+                    const result = await response.json();
+                    if (result.status === "success") {
+                        folderUrls = result.urls;
+                    }
                 }
 
-                // Simulate/Prepare UI Data
                 assignedData = selectedTasks.map((task, index) => ({
                     group: index + 1,
                     task: task,
-                    folderUrl: "#" // Will be updated if backend returns real URLs
+                    folderUrl: folderUrls[index + 1] || "#"
                 }));
 
                 renderTable();
-                updateSubmissionOptions(count);
-                
                 document.getElementById('table-section').classList.remove('hidden');
                 document.getElementById('timestamp').innerText = new Date().toLocaleTimeString();
                 
             } catch (error) {
                 console.error(error);
-                alert("配置雲端空間時發生錯誤，請檢查 scriptURL");
+                alert("API 請求失敗，請確認 GAS 腳本已正確部署為「任何人」皆可存取。");
+                
+                assignedData = selectedTasks.map((task, index) => ({
+                    group: index + 1,
+                    task: task,
+                    folderUrl: "#"
+                }));
+                renderTable();
+                document.getElementById('table-section').classList.remove('hidden');
             } finally {
-                // Delay for effect
                 setTimeout(() => {
                     document.getElementById('loading-overlay').classList.add('hidden');
-                }, 1000);
+                }, 800);
             }
         }
 
@@ -374,25 +255,72 @@
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-6 py-6 font-bold text-brand-indigo text-lg">第 ${item.group} 組</td>
                     <td class="px-6 py-6 font-medium text-slate-800">${item.task.title}</td>
-                    <td class="px-6 py-6 text-center">
-                        <button onclick="showTaskDetails(${item.task.id})" class="text-brand-indigo hover:underline font-semibold">
+                    <td class="px-6 py-6">
+                        <button onclick="showTaskDetails(${item.task.id})" class="text-brand-indigo hover:underline font-semibold text-sm">
                             查看詳情
                         </button>
                     </td>
                     <td class="px-6 py-6">
-                        <a href="${item.folderUrl}" target="_blank" class="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-bold bg-emerald-50 px-4 py-2 rounded-lg border border-emerald-100">
+                        <a href="${item.folderUrl}" target="_blank" class="inline-flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 font-bold bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 text-sm">
                             📂 開啟雲端資料夾
                         </a>
+                    </td>
+                    <td class="px-6 py-6">
+                        <div class="flex gap-2">
+                            <input type="url" id="input-url-${item.group}" placeholder="輸入作品網址" 
+                                class="flex-1 px-3 py-2 rounded-lg border border-slate-200 text-sm focus:border-brand-emerald outline-none transition-all">
+                            <button onclick="submitRow(${item.group})" class="bg-brand-emerald hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-all flex-shrink-0">
+                                提交
+                            </button>
+                        </div>
+                        <div id="feedback-${item.group}" class="hidden text-[10px] mt-1 text-emerald-600 font-bold">已同步至試算表!</div>
                     </td>
                 </tr>
             `).join('');
         }
 
-        // 5. UI: Update Submission Dropdown
-        function updateSubmissionOptions(count) {
-            const select = document.getElementById('submit-group');
-            select.innerHTML = '<option value="" disabled selected>請選擇組別</option>' + 
-                Array.from({length: count}, (_, i) => `<option value="${i+1}">第 ${i+1} 組</option>`).join('');
+        // 5. Logic: Row-specific Submission
+        async function submitRow(groupNum) {
+            const urlInput = document.getElementById(`input-url-${groupNum}`);
+            const url = urlInput.value;
+            const task = assignedData.find(d => d.group === groupNum);
+
+            if (!url) {
+                alert("請輸入網址");
+                return;
+            }
+
+            if (!scriptURL) {
+                alert("未設定 scriptURL，無法提交。");
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            const originalText = btn.innerText;
+            btn.innerText = "...";
+
+            try {
+                const response = await fetch(scriptURL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: "submitResult",
+                        group: groupNum,
+                        taskName: task.task.title,
+                        url: url
+                    })
+                });
+                
+                const feedback = document.getElementById(`feedback-${groupNum}`);
+                feedback.classList.remove('hidden');
+                urlInput.value = ""; // Clear input
+                setTimeout(() => feedback.classList.add('hidden'), 3000);
+            } catch (error) {
+                alert("提交失敗");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
         }
 
         // 6. UI: Modal Functions
@@ -420,42 +348,6 @@
         function closeModal() {
             document.getElementById('task-modal').classList.add('hidden');
             document.body.style.overflow = 'auto';
-        }
-
-        // 7. Logic: Submission
-        async function submitResult() {
-            const group = document.getElementById('submit-group').value;
-            const url = document.getElementById('submit-url').value;
-
-            if (!group || !url) {
-                alert("請填寫完整繳交資訊");
-                return;
-            }
-
-            try {
-                if (scriptURL) {
-                    await fetch(scriptURL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: "submitResult",
-                            group: group,
-                            url: url
-                        })
-                    });
-                }
-
-                const feedback = document.getElementById('submit-feedback');
-                feedback.classList.remove('hidden');
-                setTimeout(() => {
-                    feedback.classList.add('hidden');
-                }, 5000);
-                
-                document.getElementById('submit-url').value = "";
-            } catch (error) {
-                alert("提交時發生錯誤");
-            }
         }
     </script>
 </body>
