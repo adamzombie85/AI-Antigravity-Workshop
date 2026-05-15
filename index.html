@@ -122,7 +122,7 @@
     <!-- Task Modal -->
     <div id="task-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div class="relative bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl modal-enter">
+        <div class="relative bg-white w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl modal-enter">
             <div class="p-8">
                 <div class="flex justify-between items-start mb-6">
                     <div id="modal-tag" class="text-xs font-bold uppercase tracking-wider bg-indigo-100 text-brand-indigo px-3 py-1 rounded-full mb-2 inline-block"></div>
@@ -133,24 +133,36 @@
                 <div class="space-y-6">
                     <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
                         <h4 class="font-bold text-brand-indigo mb-2 flex items-center gap-2">
-                            <span>🔍 需求與挑戰</span>
+                            <span>🔍 需求</span>
                         </h4>
                         <p id="modal-requirement" class="text-slate-700 leading-relaxed"></p>
                     </div>
 
                     <div>
                         <h4 class="font-bold text-brand-indigo mb-2 flex items-center gap-2">
-                            <span>🎯 工具目的</span>
+                            <span>🎯 想像畫面</span>
                         </h4>
                         <p id="modal-purpose" class="text-slate-700 leading-relaxed"></p>
                     </div>
 
-                    <div>
-                        <h4 class="font-bold text-brand-indigo mb-2 flex items-center gap-2">
-                            <span>👥 互動分工</span>
-                        </h4>
-                        <div id="modal-roles" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3 text-sm">
-                            <!-- Dynamic Content -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+                            <h4 class="font-bold text-brand-indigo mb-3 flex items-center gap-2">
+                                <span>🤖 專家組 (Gemini 提示詞)</span>
+                            </h4>
+                            <div class="relative">
+                                <pre id="modal-expert" class="text-slate-700 text-sm whitespace-pre-wrap break-words leading-relaxed font-mono bg-white p-4 rounded-xl border border-indigo-100"></pre>
+                                <button onclick="copyToClipboard('modal-expert')" class="absolute top-2 right-2 text-xs bg-indigo-100 hover:bg-indigo-200 text-brand-indigo px-2 py-1 rounded">複製</button>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
+                            <h4 class="font-bold text-brand-emerald mb-3 flex items-center gap-2">
+                                <span>🛠️ 開發者組 (Antigravity 提示詞)</span>
+                            </h4>
+                            <div class="relative">
+                                <pre id="modal-developer" class="text-slate-700 text-sm whitespace-pre-wrap break-words leading-relaxed font-mono bg-white p-4 rounded-xl border border-emerald-100"></pre>
+                                <button onclick="copyToClipboard('modal-developer')" class="absolute top-2 right-2 text-xs bg-emerald-100 hover:bg-emerald-200 text-brand-emerald px-2 py-1 rounded">複製</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -166,19 +178,82 @@
 
     <script>
         // 1. Google Apps Script URL (REQUIRED)
-        // 請將部署後的 Web App URL 貼在這裡
         const scriptURL = "https://script.google.com/macros/s/AKfycbyqa4AoFzCK6BIYfh9WGZNSeQxDWSAdSBO-huxktbc5qmfaCzHMZB02dNOBonJiQ_UfEQ/exec";
 
-        // 2. Task Data
+        // 2. Task Data (Updated to CO-STAR framework)
         const TASKS = [
-            { id: 1, title: "實驗室復原導航員", target: "ADHD", requirement: "ADHD 學生面對理化實驗後的混亂桌面容易焦慮。", purpose: "視覺化步驟勾選框。想像畫面：學生下課前打開網頁，收好器材就點擊「已洗淨歸位」，系統發出叮咚聲並跳出鼓勵貼紙。", roles: { "專家1": "運用 NotebookLM 整理「國中理化實驗室收納規範」。", "專家2": "運用 Gemini 轉化為 5 個具體步驟。", "開發者1": "在 Antigravity 開發帶有大勾選框的網頁。", "開發者2": "負責 UI 測試與 CSS 色彩調整。" } },
-            { id: 2, title: "合作報告：衝突拆解器", target: "ASD", requirement: "ASD 學生難以理解組員的「委婉拒絕」或不知如何表達異議。", purpose: "社交腳本選擇題。想像畫面：學生遇到困難時偷偷點選情境，網頁播放建議回應的語音範例供練習。", roles: { "專家1": "運用 NotebookLM 整理「青少年 ASD 社交訓練資料」。", "專家2": "運用 Gemini 產出 3 個衝突情境分支。", "開發者1": "製作互動式對話視窗。", "開發者2": "測試選項路徑與語速回饋。" } },
-            { id: 3, title: "細胞構造：易讀掃描儀", target: "LD/ID", requirement: "學障學生對生物課本密集的細胞構造描述感到閱讀疲勞。", purpose: "圖文易讀百科。想像畫面：學生輸入課本文字，網頁顯示大字體短句，點擊「細胞核」會發聲：「這是細胞的大腦」。", roles: { "專家1": "運用 NotebookLM 提取生物術語關鍵字。", "專家2": "運用 Gemini 將術語改寫為易讀比喻。", "開發者1": "開發卡片式佈局網頁。", "開發者2": "負責 UI 無障礙檢查。" } },
-            { id: 4, title: "今日優先事項：任務提取器", target: "ADHD/LD", requirement: "國中科目繁多，ADHD 學生常遺漏聯絡簿中的攜帶物品。", purpose: "優先順序分類器。想像畫面：學生輸入內容，網頁自動用鮮豔顏色標記「明天要交」與「要帶器材」。", roles: { "專家1": "運用 NotebookLM 分析「國中生時間管理策略」。", "專家2": "運用 Gemini 設定優先級判斷邏輯。", "開發者1": "製作輸入框與自動分類列表區。", "開發者2": "模擬輸入測試準確度。" } },
-            { id: 5, title: "考場冷靜：3 分鐘按鈕", target: "EBD", requirement: "情障學生在考試壓力下容易生理恐慌。", purpose: "快速情緒調節引導。想像畫面：學生感到心跳加快時點開網頁，跟隨溫柔節奏動畫呼吸 3 次並聽取安撫語句。", roles: { "專家1": "運用 NotebookLM 整理青少年 CBT 或正念技巧。", "專家2": "運用 Gemini 編寫三階段語音引導腳本。", "開發者1": "開發具備計時器與動態視覺的冷靜頁面。", "開發者2": "調整網頁色彩心理學配色。" } },
-            { id: 6, title: "通勤守護：迷路應急包", target: "ID/ASD", requirement: "智障學生若公車改道或下錯站會極度恐慌。", purpose: "緊急行動指引。想像畫面：手機上有個大紅按鈕，點開顯示「待在原地、打給老師」並持續播放語音安撫。", roles: { "專家1": "運用 NotebookLM 整理社區適應資料。", "專家2": "運用 Gemini 產出針對「下錯站」的應變指令。", "開發者1": "製作高對比、大按鈕網頁。", "開發者2": "模擬手機端操作，測試強光下清晰度。" } },
-            { id: 7, title: "拒絕誘惑：口語練習室", target: "EBD/ID", requirement: "國中同儕壓力大，學生常被帶動去做違規行為。", purpose: "拒絕技巧練習。想像畫面：網頁出現同學角色說話，學生練習選擇正確台詞保護自己。", roles: { "專家1": "運用 NotebookLM 整理「青少年拒絕技巧」策略。", "專家2": "運用 Gemini 設定誘惑情境對話腳本。", "開發者1": "開發角色對話框形式的遊戲。", "開發者2": "確保語音朗讀能聽出「堅定」的語氣。" } },
-            { id: 8, title: "午餐預算：數位點餐員", target: "LD-Math", requirement: "數障學生在福利社面對找零計算容易尷尬。", purpose: "金額視覺化計算。想像畫面：網頁上有餐點圖示，點選後自動顯示總價與「應找回多少」。", roles: { "專家1": "運用 NotebookLM 整理功能性數學課程。", "專家2": "運用 Gemini 設定福利社商品清單與找零邏輯。", "開發者1": "製作圖像化點餐介面。", "開發者2": "協助加總邏輯除錯。" } }
+            {
+                id: 1,
+                title: "理化實驗器材歸位表",
+                target: "ADHD",
+                requirement: "解決 ADHD 學生實驗後不知道從何收起的混亂。",
+                purpose: "學生收好一個試管點擊一下，網頁播放「叮咚」並顯示「你是收納高手！」。",
+                expertPrompt: "(C) Context: 我是國中理化老師。(O) Objective: 請列出 5 個實驗後收器材的簡短步驟，每一步要配上一句熱情的鼓勵。(S) Style: 白話文。(T) Tone: 積極鼓勵。(R) Response: 條列式文字。",
+                developerPrompt: "請做一個單頁網頁，有 5 個巨大的勾選框。每勾一個就彈出專家組生成的鼓勵語，並播放叮咚聲。要有播放語音按鈕唸出所有文字。"
+            },
+            {
+                id: 2,
+                title: "分組意見衝突選擇器",
+                target: "ASD",
+                requirement: "ASD 學生不懂如何優雅地表達異議。",
+                purpose: "學生點選「想反對但不想吵架」，網頁播放正確示範的語音。",
+                expertPrompt: "(C) Context: 國中分組報告情境：同學不想採用我的圖。(O) Objective: 設計 A(直接罵人) 與 B(禮貌建議) 兩種腳本與後果。(S) Style: 對話框格式。(T) Tone: 衛教感。(R) Response: 文字對話。",
+                developerPrompt: "做一個互動網頁。上方顯示衝突情境，中間有 A 和 B 兩個超大按鈕。點 A 顯示哭臉，點 B 顯示笑臉與語音鼓勵。按鈕要加上高對比顏色。"
+            },
+            {
+                id: 3,
+                title: "生物術語易讀翻翻卡",
+                target: "LD/ID",
+                requirement: "將抽象的細胞構造轉化為熟悉的校園場景。",
+                purpose: "卡片正面寫「細胞核」，點擊翻面顯示「校長室」並唸出功能。",
+                expertPrompt: "(C) Context: 國一生物課。(O) Objective: 用學校構造比喻細胞核、細胞膜、粒線體，每項 20 字內。(S) Style: 極簡白話。(T) Tone: 親切。(R) Response: 名詞配對表。",
+                developerPrompt: "做一個網頁有 3 張大卡片。卡片正面寫術語，點擊翻轉顯示比喻內容，並自動播放語音。背景要簡約防止分心。"
+            },
+            {
+                id: 4,
+                title: "聯絡簿重點紅筆劃記",
+                target: "ADHD/LD",
+                requirement: "協助學生從聯絡簿中抓出「明天要考、要帶」的重點。",
+                purpose: "貼上聯絡簿，點一下按鈕，所有「考」字自動變大變紅。",
+                expertPrompt: "(C) Context: 學生助理。(O) Objective: 寫出邏輯判斷：若文字含『考』、『帶』，需加上『急！』標籤並改紅色。(S) Style: 規則邏輯。(T) Tone: 提醒。(R) Response: 處理規則。",
+                developerPrompt: "做一個大輸入框。學生貼上聯絡簿後，點擊『重點標記』按鈕，下方顯示區會自動把帶有關鍵字的句子變成紅底白字，字體放大兩倍。"
+            },
+            {
+                id: 5,
+                title: "考場心跳冷靜圓圈",
+                target: "EBD",
+                requirement: "防止情障生在考場因焦慮而撕毀考卷。",
+                purpose: "跟著圓圈變大變小來深呼吸，倒數結束顯示「你超棒」。",
+                expertPrompt: "(C) Context: 心理輔導大哥哥。(O) Objective: 寫一段給國中生的正念腳本，包含 3 次呼吸節奏提示。(S) Style: 口語化。(T) Tone: 溫柔安撫。(R) Response: 60 秒朗讀稿。",
+                developerPrompt: "做一個全螢幕只有一個大圓形的網頁。點擊『開始冷靜』後，圓形會隨呼吸節奏放大縮小，下方顯示 60 秒倒數，結束顯示鼓勵文字。"
+            },
+            {
+                id: 6,
+                title: "迷路應急三大按鈕",
+                target: "ID/ASD",
+                requirement: "學生坐錯站時提供最簡單的操作。",
+                purpose: "手機上有三個大按鈕，點一下就發出超大聲的求助語音。",
+                expertPrompt: "(C) Context: 緊急救援。(O) Objective: 設計迷路 3 個短語：(1)留原地 (2)打老師 (3)求助。每句配安撫語。(S) Style: 指令式。(T) Tone: 堅定。(R) Response: 短句清單。",
+                developerPrompt: "做一個滿版網頁，只有紅、黃、藍三個巨大按鈕。點擊會用最大音量播放救命指令。背景要是高對比度，適應戶外陽光下看清楚。"
+            },
+            {
+                id: 7,
+                title: "拒絕抄作業模擬室",
+                target: "EBD/ID",
+                requirement: "練習在同學誘惑下堅定說「不」。",
+                purpose: "像 LINE 的介面，同學說「給我抄」，學生選「自己寫」獲得獎勵。",
+                expertPrompt: "(C) Context: 校園同儕。(O) Objective: 寫一段誘惑抄作業對話，提供『答應』與『拒絕』兩個選項與後果。(S) Style: 通訊軟體格式。(T) Tone: 寫實。(R) Response: 分支對話。",
+                developerPrompt: "做一個對話視窗。上方是同學誘惑，下方是兩個按鈕。學生選後跳出後果圖案與音效。對話框字體需 text-2xl，方便閱讀。"
+            },
+            {
+                id: 8,
+                title: "福利社買點心計算機",
+                target: "LD-Math",
+                requirement: "數障生面對多項商品加總與找零感到壓力。",
+                purpose: "點圖片加錢，網頁自動算出「你拿 100 元會找回多少」。",
+                expertPrompt: "(C) Context: 數學小老師。(O) Objective: 列出 4 樣福利社零食與價格，並寫出 100 元減掉總價的公式。(S) Style: 數學邏輯。(T) Tone: 實用。(R) Response: 商品與公式表。",
+                developerPrompt: "做一個網頁顯示 4 張大食物圖。每點一下圖就加錢。下方顯示：『總共 XX 元，找回 YY 元』。要配合語音報數金額。"
+            }
         ];
 
         let assignedData = [];
@@ -332,14 +407,8 @@
             document.getElementById('modal-title').innerText = task.title;
             document.getElementById('modal-requirement').innerText = task.requirement;
             document.getElementById('modal-purpose').innerText = task.purpose;
-            
-            const rolesHtml = Object.entries(task.roles).map(([role, desc]) => `
-                <div class="border-l-4 border-indigo-200 pl-4">
-                    <div class="font-bold text-slate-900">${role}</div>
-                    <div class="text-slate-600">${desc}</div>
-                </div>
-            `).join('');
-            document.getElementById('modal-roles').innerHTML = rolesHtml;
+            document.getElementById('modal-expert').innerText = task.expertPrompt;
+            document.getElementById('modal-developer').innerText = task.developerPrompt;
 
             document.getElementById('task-modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -348,6 +417,13 @@
         function closeModal() {
             document.getElementById('task-modal').classList.add('hidden');
             document.body.style.overflow = 'auto';
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("已複製到剪貼簿！");
+            });
         }
     </script>
 </body>
