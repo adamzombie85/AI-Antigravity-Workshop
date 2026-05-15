@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6/11 高師大特教 AI 研習管理系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            indigo: '#4338ca', // Indigo-700
+                            emerald: '#059669', // Emerald-600
+                            dark: '#1e1b4b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .modal-enter {
+            animation: modalFadeIn 0.3s ease-out;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-900 selection:bg-brand-indigo selection:text-white">
+
+    <!-- Header -->
+    <header class="bg-brand-indigo text-white py-8 px-4 shadow-lg">
+        <div class="max-auto max-w-6xl text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2">6/11 高師大特教大二 AI 研習</h1>
+            <p class="text-indigo-100 text-lg">AI 輔具開發管理系統</p>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-10 space-y-12">
+
+        <!-- 1. Instructor Section: Initialization -->
+        <section id="instructor-panel" class="glass-card rounded-2xl p-8 shadow-xl border-l-8 border-brand-indigo">
+            <div class="flex flex-col md:flex-row items-end gap-6">
+                <div class="flex-1">
+                    <label for="group-count" class="block text-sm font-semibold text-slate-700 mb-2">小組總數 (1-8 組)</label>
+                    <input type="number" id="group-count" min="1" max="8" value="8" 
+                        class="w-full px-4 py-4 rounded-xl border-2 border-slate-200 focus:border-brand-indigo focus:ring-0 text-xl font-bold transition-all">
+                </div>
+                <button id="btn-init" onclick="initializeGroups()" 
+                    class="bg-brand-indigo hover:bg-brand-dark text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-indigo-200 transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center gap-2">
+                    <span>🚀 開始分配並生成雲端空間</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Loading Overlay (Initial Hidden) -->
+        <div id="loading-overlay" class="hidden fixed inset-0 bg-brand-dark/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white">
+            <div class="loading-spinner mb-4"></div>
+            <p class="text-xl font-medium" id="loading-text">正在為各組配置雲端共用空間...</p>
+        </div>
+
+        <!-- 2. Groups Table Section (Hidden until init) -->
+        <section id="table-section" class="hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="bg-brand-indigo text-white p-2 rounded-lg">📋</span>
+                    各組任務與權限網址表
+                </h2>
+                <span class="text-sm text-slate-500">自動生成於 <span id="timestamp"></span></span>
+            </div>
+            
+            <div class="overflow-hidden rounded-2xl shadow-xl border border-slate-200 bg-white">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-100 text-slate-600 font-semibold uppercase text-sm">
+                        <tr>
+                            <th class="px-6 py-4">組別</th>
+                            <th class="px-6 py-4">分配題目</th>
+                            <th class="px-6 py-4 text-center">操作</th>
+                            <th class="px-6 py-4">專屬資料夾</th>
+                        </tr>
+                    </thead>
+                    <tbody id="groups-tbody" class="divide-y divide-slate-100">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 3. Student Submission Section -->
+        <section id="submission-panel" class="glass-card rounded-2xl p-8 shadow-xl border-l-8 border-brand-emerald">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                <span class="bg-brand-emerald text-white p-2 rounded-lg">📤</span>
+                成果繳交 (學生端)
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">選擇組別</label>
+                    <select id="submit-group" class="w-full px-4 py-4 rounded-xl border-2 border-slate-200 focus:border-brand-emerald transition-all text-lg font-medium">
+                        <option value="" disabled selected>請選擇組別</option>
+                        <!-- Dynamic Options -->
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">作品網址 (GitHub / Vercel / Cloudflare)</label>
+                    <div class="flex gap-3">
+                        <input type="url" id="submit-url" placeholder="https://..." 
+                            class="flex-1 px-4 py-4 rounded-xl border-2 border-slate-200 focus:border-brand-emerald transition-all text-lg">
+                        <button onclick="submitResult()" class="bg-brand-emerald hover:bg-emerald-700 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-emerald-200 transition-all transform hover:-translate-y-1">
+                            提交成果
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="submit-feedback" class="hidden mt-4 p-4 rounded-lg bg-emerald-100 text-emerald-800 font-medium border border-emerald-200">
+                ✅ 提交成功！辛苦各位專家與開發者了。
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-10 text-slate-400 text-sm">
+        &copy; 2026 高師大特教系研習管理系統 | Designed for Inclusive Education
+    </footer>
+
+    <!-- Task Modal -->
+    <div id="task-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="relative bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl modal-enter">
+            <div class="p-8">
+                <div class="flex justify-between items-start mb-6">
+                    <div id="modal-tag" class="text-xs font-bold uppercase tracking-wider bg-indigo-100 text-brand-indigo px-3 py-1 rounded-full mb-2 inline-block"></div>
+                    <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+                </div>
+                <h3 id="modal-title" class="text-3xl font-bold text-slate-900 mb-4"></h3>
+                
+                <div class="space-y-6">
+                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                        <h4 class="font-bold text-brand-indigo mb-2 flex items-center gap-2">
+                            <span>🔍 需求與挑戰</span>
+                        </h4>
+                        <p id="modal-requirement" class="text-slate-700 leading-relaxed"></p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-brand-indigo mb-2 flex items-center gap-2">
+                            <span>🎯 工具目的</span>
+                        </h4>
+                        <p id="modal-purpose" class="text-slate-700 leading-relaxed"></p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-brand-indigo mb-2 flex items-center gap-2">
+                            <span>👥 互動分工</span>
+                        </h4>
+                        <div id="modal-roles" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3 text-sm">
+                            <!-- Dynamic Content -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-10">
+                    <button onclick="closeModal()" class="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors">
+                        關閉視窗
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Google Apps Script URL (Placeholder)
+        const scriptURL = "";
+
+        // 2. Task Data
+        const TASKS = [
+            {
+                id: 1,
+                title: "實驗室復原導航員",
+                target: "ADHD",
+                requirement: "ADHD 學生面對理化實驗後的混亂桌面容易焦慮。",
+                purpose: "視覺化步驟勾選框。想像畫面：學生下課前打開網頁，收好器材就點擊「已洗淨歸位」，系統發出叮咚聲並跳出鼓勵貼紙。",
+                roles: {
+                    "專家1": "運用 NotebookLM 整理「國中理化實驗室收納規範」。",
+                    "專家2": "運用 Gemini 轉化為 5 個具體步驟。",
+                    "開發者1": "在 Antigravity 開發帶有大勾選框的網頁。",
+                    "開發者2": "負責 UI 測試與 CSS 色彩調整。"
+                }
+            },
+            {
+                id: 2,
+                title: "合作報告：衝突拆解器",
+                target: "ASD",
+                requirement: "ASD 學生難以理解組員的「委婉拒絕」或不知如何表達異議。",
+                purpose: "社交腳本選擇題。想像畫面：學生遇到困難時偷偷點選情境，網頁播放建議回應的語音範例供練習。",
+                roles: {
+                    "專家1": "運用 NotebookLM 整理「青少年 ASD 社交訓練資料」。",
+                    "專家2": "運用 Gemini 產出 3 個衝突情境分支。",
+                    "開發者1": "製作互動式對話視窗。",
+                    "開發者2": "測試選項路徑與語速回饋。"
+                }
+            },
+            {
+                id: 3,
+                title: "細胞構造：易讀掃描儀",
+                target: "LD/ID",
+                requirement: "學障學生對生物課本密集的細胞構造描述感到閱讀疲勞。",
+                purpose: "圖文易讀百科。想像畫面：學生輸入課本文字，網頁顯示大字體短句，點擊「細胞核」會發聲：「這是細胞的大腦」。",
+                roles: {
+                    "專家1": "運用 NotebookLM 提取生物術語關鍵字。",
+                    "專家2": "運用 Gemini 將術語改寫為易讀比喻。",
+                    "開發者1": "開發卡片式佈局網頁。",
+                    "開發者2": "負責 UI 無障礙檢查。"
+                }
+            },
+            {
+                id: 4,
+                title: "今日優先事項：任務提取器",
+                target: "ADHD/LD",
+                requirement: "國中科目繁多，ADHD 學生常遺漏聯絡簿中的攜帶物品。",
+                purpose: "優先順序分類器。想像畫面：學生輸入內容，網頁自動用鮮豔顏色標記「明天要交」與「要帶器材」。",
+                roles: {
+                    "專家1": "運用 NotebookLM 分析「國中生時間管理策略」。",
+                    "專家2": "運用 Gemini 設定優先級判斷邏輯。",
+                    "開發者1": "製作輸入框與自動分類列表區。",
+                    "開發者2": "模擬輸入測試準確度。"
+                }
+            },
+            {
+                id: 5,
+                title: "考場冷靜：3 分鐘按鈕",
+                target: "EBD",
+                requirement: "情障學生在考試壓力下容易生理恐慌。",
+                purpose: "快速情緒調節引導。想像畫面：學生感到心跳加快時點開網頁，跟隨溫柔節奏動畫呼吸 3 次並聽取安撫語句。",
+                roles: {
+                    "專家1": "運用 NotebookLM 整理青少年 CBT 或正念技巧。",
+                    "專家2": "運用 Gemini 編寫三階段語音引導腳本。",
+                    "開發者1": "開發具備計時器與動態視覺的冷靜頁面。",
+                    "開發者2": "調整網頁色彩心理學配色。"
+                }
+            },
+            {
+                id: 6,
+                title: "通勤守護：迷路應急包",
+                target: "ID/ASD",
+                requirement: "智障學生若公車改道或下錯站會極度恐慌。",
+                purpose: "緊急行動指引。想像畫面：手機上有個大紅按鈕，點開顯示「待在原地、打給老師」並持續播放語音安撫。",
+                roles: {
+                    "專家1": "運用 NotebookLM 整理社區適應資料。",
+                    "專家2": "運用 Gemini 產出針對「下錯站」的應變指令。",
+                    "開發者1": "製作高對比、大按鈕網頁。",
+                    "開發者2": "模擬手機端操作，測試強光下清晰度。"
+                }
+            },
+            {
+                id: 7,
+                title: "拒絕誘惑：口語練習室",
+                target: "EBD/ID",
+                requirement: "國中同儕壓力大，學生常被帶動去做違規行為。",
+                purpose: "拒絕技巧練習。想像畫面：網頁出現同學角色說話，學生練習選擇正確台詞保護自己。",
+                roles: {
+                    "專家1": "運用 NotebookLM 整理「青少年拒絕技巧」策略。",
+                    "專家2": "運用 Gemini 設定誘惑情境對話腳本。",
+                    "開發者1": "開發角色對話框形式的遊戲。",
+                    "開發者2": "確保語音朗讀能聽出「堅定」的語氣。"
+                }
+            },
+            {
+                id: 8,
+                title: "午餐預算：數位點餐員",
+                target: "LD-Math",
+                requirement: "數障學生在福利社面對找零計算容易尷尬。",
+                purpose: "金額視覺化計算。想像畫面：網頁上有餐點圖示，點選後自動顯示總價與「應找回多少」。",
+                roles: {
+                    "專家1": "運用 NotebookLM 整理功能性數學課程。",
+                    "專家2": "運用 Gemini 設定福利社商品清單與找零邏輯。",
+                    "開發者1": "製作圖像化點餐介面。",
+                    "開發者2": "協助加總邏輯除錯。"
+                }
+            }
+        ];
+
+        let assignedData = [];
+
+        // 3. Logic: Initialize Groups
+        async function initializeGroups() {
+            const count = parseInt(document.getElementById('group-count').value);
+            if (count < 1 || count > 8) {
+                alert("請輸入 1-8 之間的數字");
+                return;
+            }
+
+            // Show Loading
+            document.getElementById('loading-overlay').classList.remove('hidden');
+
+            // Randomly pick tasks
+            const shuffled = [...TASKS].sort(() => 0.5 - Math.random());
+            const selectedTasks = shuffled.slice(0, count);
+
+            try {
+                let folderUrls = {};
+                
+                // If scriptURL is set, call backend
+                if (scriptURL) {
+                    const response = await fetch(scriptURL, {
+                        method: 'POST',
+                        mode: 'no-cors', // Common for GAS
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: "initFolders",
+                            groups: selectedTasks.map((t, i) => ({
+                                groupNum: i + 1,
+                                taskName: t.title
+                            }))
+                        })
+                    });
+                    // Since no-cors can't read response, we usually need a small delay or a different approach
+                    // For this demo, we'll simulate the response if scriptURL is empty or fails
+                }
+
+                // Simulate/Prepare UI Data
+                assignedData = selectedTasks.map((task, index) => ({
+                    group: index + 1,
+                    task: task,
+                    folderUrl: "#" // Will be updated if backend returns real URLs
+                }));
+
+                renderTable();
+                updateSubmissionOptions(count);
+                
+                document.getElementById('table-section').classList.remove('hidden');
+                document.getElementById('timestamp').innerText = new Date().toLocaleTimeString();
+                
+            } catch (error) {
+                console.error(error);
+                alert("配置雲端空間時發生錯誤，請檢查 scriptURL");
+            } finally {
+                // Delay for effect
+                setTimeout(() => {
+                    document.getElementById('loading-overlay').classList.add('hidden');
+                }, 1000);
+            }
+        }
+
+        // 4. UI: Render Table
+        function renderTable() {
+            const tbody = document.getElementById('groups-tbody');
+            tbody.innerHTML = assignedData.map(item => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-6 py-6 font-bold text-brand-indigo text-lg">第 ${item.group} 組</td>
+                    <td class="px-6 py-6 font-medium text-slate-800">${item.task.title}</td>
+                    <td class="px-6 py-6 text-center">
+                        <button onclick="showTaskDetails(${item.task.id})" class="text-brand-indigo hover:underline font-semibold">
+                            查看詳情
+                        </button>
+                    </td>
+                    <td class="px-6 py-6">
+                        <a href="${item.folderUrl}" target="_blank" class="inline-flex items-center gap-2 text-emerald-600 hover:text-emerald-700 font-bold bg-emerald-50 px-4 py-2 rounded-lg border border-emerald-100">
+                            📂 開啟雲端資料夾
+                        </a>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 5. UI: Update Submission Dropdown
+        function updateSubmissionOptions(count) {
+            const select = document.getElementById('submit-group');
+            select.innerHTML = '<option value="" disabled selected>請選擇組別</option>' + 
+                Array.from({length: count}, (_, i) => `<option value="${i+1}">第 ${i+1} 組</option>`).join('');
+        }
+
+        // 6. UI: Modal Functions
+        function showTaskDetails(taskId) {
+            const task = TASKS.find(t => t.id === taskId);
+            if (!task) return;
+
+            document.getElementById('modal-tag').innerText = task.target;
+            document.getElementById('modal-title').innerText = task.title;
+            document.getElementById('modal-requirement').innerText = task.requirement;
+            document.getElementById('modal-purpose').innerText = task.purpose;
+            
+            const rolesHtml = Object.entries(task.roles).map(([role, desc]) => `
+                <div class="border-l-4 border-indigo-200 pl-4">
+                    <div class="font-bold text-slate-900">${role}</div>
+                    <div class="text-slate-600">${desc}</div>
+                </div>
+            `).join('');
+            document.getElementById('modal-roles').innerHTML = rolesHtml;
+
+            document.getElementById('task-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('task-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // 7. Logic: Submission
+        async function submitResult() {
+            const group = document.getElementById('submit-group').value;
+            const url = document.getElementById('submit-url').value;
+
+            if (!group || !url) {
+                alert("請填寫完整繳交資訊");
+                return;
+            }
+
+            try {
+                if (scriptURL) {
+                    await fetch(scriptURL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: "submitResult",
+                            group: group,
+                            url: url
+                        })
+                    });
+                }
+
+                const feedback = document.getElementById('submit-feedback');
+                feedback.classList.remove('hidden');
+                setTimeout(() => {
+                    feedback.classList.add('hidden');
+                }, 5000);
+                
+                document.getElementById('submit-url').value = "";
+            } catch (error) {
+                alert("提交時發生錯誤");
+            }
+        }
+    </script>
+</body>
+</html>
