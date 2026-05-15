@@ -30,9 +30,8 @@ function doPost(e) {
 function handleInitFolders(groups) {
   const folderUrls = {};
   
-  // You can optionally specify a Parent Folder ID here
-  // const parentFolder = DriveApp.getFolderById("YOUR_PARENT_FOLDER_ID");
-  const parentFolder = DriveApp.getRootFolder(); 
+  // 指定父資料夾 ID
+  const parentFolder = DriveApp.getFolderById("1SCbiEBOdZyUs96Cnv1dCPfqxxzIFF0Vd"); 
 
   groups.forEach(g => {
     const folderName = `第${g.groupNum}組 - ${g.taskName}`;
