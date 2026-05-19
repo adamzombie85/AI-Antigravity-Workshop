@@ -17,6 +17,9 @@ function doPost(e) {
     } else if (action === "submitResult") {
       return ContentService.createTextOutput(JSON.stringify(handleSubmitResult(data)))
         .setMimeType(ContentService.MimeType.JSON);
+    } else if (action === "getResults") {
+      return ContentService.createTextOutput(JSON.stringify(handleGetResults()))
+        .setMimeType(ContentService.MimeType.JSON);
     }
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({ status: "error", message: error.toString() }))
@@ -61,4 +64,46 @@ function handleSubmitResult(data) {
   ]);
   
   return { status: "success" };
+}
+
+/**
+ * Fetches all results logged in the spreadsheet
+ */
+function handleGetResults() {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheets()[0];
+    const values = sheet.getDataRange().getValues();
+    const results = [];
+    
+    if (values.length > 0) {
+      let startIdx = 0;
+      // Skip header row if it exists
+      const firstRow = values[0];
+      if (
+        firstRow[0] === "組別" || 
+        firstRow[0] === "Group" || 
+        firstRow[0].toString().includes("組別") ||
+        firstRow[0].toString().includes("成員")
+      ) {
+        startIdx = 1;
+      }
+      
+      for (let i = startIdx; i < values.length; i++) {
+        const row = values[i];
+        if (row[0] && row[2]) { // Ensure Group and URL columns are not empty
+          results.push({
+            group: row[0].toString(),
+            taskName: row[1] ? row[1].toString() : "",
+            url: row[2].toString(),
+            timestamp: row[3] ? row[3].toString() : ""
+          });
+        }
+      }
+    }
+    
+    return { status: "success", data: results };
+  } catch (error) {
+    return { status: "error", message: error.toString() };
+  }
 }
