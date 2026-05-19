@@ -408,20 +408,30 @@
                     </p>
                 </div>
                 
-                <!-- Status Badge -->
-                <div class="flex items-center gap-3">
+                <!-- Status & Refresh Controls -->
+                <div class="flex items-center gap-3 flex-wrap">
+                    <!-- Refresh Button -->
+                    <button onclick="loadShowcaseBoard()" 
+                            class="group bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 text-slate-700 font-bold px-4 py-2.5 rounded-xl text-sm transition-all shadow-sm flex items-center gap-2 outline-none">
+                        <svg class="w-4 h-4 text-slate-500 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12"></path>
+                        </svg>
+                        <span>🔄 即時更新</span>
+                    </button>
+
+                    <!-- Status Badge -->
                     <span class="bg-indigo-50 border border-indigo-100 text-indigo-700 px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2 shadow-sm">
                         <span class="flex h-2.5 w-2.5 relative">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-600"></span>
                         </span>
-                        已繳交：<span id="submitted-count" class="text-lg">2</span> 組
+                        已繳交：<span id="submitted-count" class="text-lg">0</span> 組
                     </span>
                 </div>
             </div>
 
             <!-- Empty State (Hidden when items exist) -->
-            <div id="board-empty-state" class="hidden flex flex-col items-center justify-center py-16 text-center bg-slate-100/50 rounded-[2rem] border-2 border-dashed border-slate-200">
+            <div id="board-empty-state" class="flex flex-col items-center justify-center py-16 text-center bg-slate-100/50 rounded-[2rem] border-2 border-dashed border-slate-200">
                 <span class="text-5xl mb-3">📂</span>
                 <h3 class="text-lg font-bold text-slate-600">尚無繳交成果</h3>
                 <p class="text-slate-400 text-sm max-w-xs mt-1">
@@ -431,66 +441,6 @@
 
             <!-- Showcase Grid -->
             <div id="showcase-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Mockup Card 1 -->
-                <div class="glass-card rounded-[2rem] p-7 shadow-xl border border-slate-200 flex flex-col justify-between transition-all hover:shadow-2xl">
-                    <div class="space-y-5">
-                        <div class="flex justify-between items-start">
-                            <span class="bg-indigo-50 text-indigo-800 text-sm font-bold px-3 py-1 rounded-xl">
-                                第 3 組
-                            </span>
-                            <span class="bg-indigo-100 text-indigo-700 text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
-                                🗣️ 人際衝突模擬器
-                            </span>
-                        </div>
-                        
-                        <div>
-                            <div class="text-xs text-slate-400 mb-1 font-semibold uppercase tracking-wider">組員姓名</div>
-                            <div class="text-lg font-bold text-slate-800 flex flex-wrap gap-2">
-                                <span class="bg-white border border-slate-200 px-3 py-1 rounded-lg text-sm">王小明</span>
-                                <span class="bg-white border border-slate-200 px-3 py-1 rounded-lg text-sm">李大華</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <span class="text-xs text-slate-400">已同步至 Google Sheet</span>
-                        <a href="https://example.com/mock-asd" target="_blank"
-                           class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-md">
-                            <span>📂 開啟成果網頁</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Mockup Card 2 -->
-                <div class="glass-card rounded-[2rem] p-7 shadow-xl border border-slate-200 flex flex-col justify-between transition-all hover:shadow-2xl">
-                    <div class="space-y-5">
-                        <div class="flex justify-between items-start">
-                            <span class="bg-indigo-50 text-indigo-800 text-sm font-bold px-3 py-1 rounded-xl">
-                                第 5 組
-                            </span>
-                            <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
-                                🚨 突發狀況應急包
-                            </span>
-                        </div>
-                        
-                        <div>
-                            <div class="text-xs text-slate-400 mb-1 font-semibold uppercase tracking-wider">組員姓名</div>
-                            <div class="text-lg font-bold text-slate-800 flex flex-wrap gap-2">
-                                <span class="bg-white border border-slate-200 px-3 py-1 rounded-lg text-sm">陳怡君</span>
-                                <span class="bg-white border border-slate-200 px-3 py-1 rounded-lg text-sm">林志強</span>
-                                <span class="bg-white border border-slate-200 px-3 py-1 rounded-lg text-sm">張雅婷</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <span class="text-xs text-slate-400">已同步至 Google Sheet</span>
-                        <a href="https://example.com/mock-adhd" target="_blank"
-                           class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-sm transition-all shadow-md">
-                            <span>📂 開啟成果網頁</span>
-                        </a>
-                    </div>
-                </div>
             </div>
         </section>
 
@@ -771,10 +721,6 @@
                 try {
                     const response = await fetch(scriptURL, {
                         method: 'POST',
-                        mode: 'cors',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
                         body: JSON.stringify(requestBody)
                     });
                     
@@ -932,8 +878,14 @@
         // 7. 從 Google Sheet 載入已繳交成果
         // ==========================================
         async function loadShowcaseBoard() {
+            // 尋找即時更新按鈕的 SVG 圖示以加入旋轉動畫
+            const refreshBtn = document.querySelector('button[onclick="loadShowcaseBoard()"]');
+            const svgIcon = refreshBtn ? refreshBtn.querySelector('svg') : null;
+            if (svgIcon) svgIcon.classList.add('animate-spin');
+
             if (!scriptURL || scriptURL.trim() === "") {
                 console.log("No scriptURL set, using default offline mockup cards.");
+                if (svgIcon) svgIcon.classList.remove('animate-spin');
                 return;
             }
 
@@ -944,10 +896,6 @@
             try {
                 const response = await fetch(scriptURL, {
                     method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({ action: "getResults" })
                 });
 
@@ -1050,6 +998,8 @@
                 }
             } catch (error) {
                 console.error("Failed to load showcase data from Google Sheet:", error);
+            } finally {
+                if (svgIcon) svgIcon.classList.remove('animate-spin');
             }
         }
 
