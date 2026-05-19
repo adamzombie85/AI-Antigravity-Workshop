@@ -30,17 +30,34 @@ function doPost(e) {
 function doGet(e) {
   try {
     const action = e.parameter.action;
+    const callback = e.parameter.callback;
     
     if (action === "getResults") {
       const result = handleGetResults();
-      return ContentService.createTextOutput(JSON.stringify(result))
-        .setMimeType(ContentService.MimeType.JSON);
+      if (callback) {
+        return ContentService.createTextOutput(`${callback}(${JSON.stringify(result)})`)
+          .setMimeType(ContentService.MimeType.JAVASCRIPT);
+      } else {
+        return ContentService.createTextOutput(JSON.stringify(result))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
     }
     
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Invalid action" }))
+    const errResponse = { status: "error", message: "Invalid action" };
+    if (callback) {
+      return ContentService.createTextOutput(`${callback}(${JSON.stringify(errResponse)})`)
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService.createTextOutput(JSON.stringify(errResponse))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: error.toString() }))
+    const errResponse = { status: "error", message: error.toString() };
+    const callback = e.parameter && e.parameter.callback;
+    if (callback) {
+      return ContentService.createTextOutput(`${callback}(${JSON.stringify(errResponse)})`)
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService.createTextOutput(JSON.stringify(errResponse))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }

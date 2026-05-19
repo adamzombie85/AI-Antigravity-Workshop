@@ -877,14 +877,14 @@
         // ==========================================
         // 7. 從 Google Sheet 載入已繳交成果
         // ==========================================
-        async function loadShowcaseBoard() {
+        function loadShowcaseBoard() {
             // 尋找即時更新按鈕的 SVG 圖示以加入旋轉動畫
             const refreshBtn = document.querySelector('button[onclick="loadShowcaseBoard()"]');
             const svgIcon = refreshBtn ? refreshBtn.querySelector('svg') : null;
             if (svgIcon) svgIcon.classList.add('animate-spin');
 
             if (!scriptURL || scriptURL.trim() === "") {
-                console.log("No scriptURL set, using default offline mockup cards.");
+                console.log("No scriptURL set.");
                 if (svgIcon) svgIcon.classList.remove('animate-spin');
                 return;
             }
@@ -893,10 +893,14 @@
             const emptyState = document.getElementById('board-empty-state');
             const countLabel = document.getElementById('submitted-count');
 
-            try {
-                const response = await fetch(scriptURL + "?action=getResults");
+            // 移除舊的 JSONP script 以保持 DOM 乾淨
+            const oldScript = document.getElementById('showcase-jsonp-script');
+            if (oldScript) oldScript.remove();
 
-                const result = await response.json();
+            // 定義全域 JSONP 回呼函式
+            window.handleShowcaseJSONP = function(result) {
+                if (svgIcon) svgIcon.classList.remove('animate-spin');
+
                 if (result.status === "success" && Array.isArray(result.data)) {
                     const dataList = result.data;
                     
@@ -992,12 +996,22 @@
                     });
 
                     countLabel.innerText = dataList.length;
+                } else {
+                    console.error("JSONP Response failed:", result);
                 }
-            } catch (error) {
-                console.error("Failed to load showcase data from Google Sheet:", error);
-            } finally {
+            };
+
+            // 建立並插入 script 標籤 (加上隨機時間戳防快取)
+            const script = document.createElement('script');
+            script.id = 'showcase-jsonp-script';
+            script.src = `${scriptURL}?action=getResults&callback=handleShowcaseJSONP&_t=${Date.now()}`;
+            
+            script.onerror = function() {
+                console.error("JSONP script load failed.");
                 if (svgIcon) svgIcon.classList.remove('animate-spin');
-            }
+            };
+
+            document.body.appendChild(script);
         }
 
         // 網頁載入完成後自動取得試算表成果
