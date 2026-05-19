@@ -27,6 +27,24 @@ function doPost(e) {
   }
 }
 
+function doGet(e) {
+  try {
+    const action = e.parameter.action;
+    
+    if (action === "getResults") {
+      const result = handleGetResults();
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Invalid action" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
 /**
  * Creates folders and sets permissions
  */
